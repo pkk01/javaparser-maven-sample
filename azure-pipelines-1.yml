@@ -2,21 +2,37 @@ trigger:
 - master
 
 pool:
-  name: Default
-  demands:
-  - Agent.Name -equals vm1   # keep if you want to force this VM
+  name: Default   # uses your vm1 agent automatically if it's the only one
 
 steps:
+
+# ----------------------------
+# Verify Java environment
+# ----------------------------
 - script: |
+    echo "Checking Java version..."
     java -version
-    echo %JAVA_HOME%
+    echo JAVA_HOME=%JAVA_HOME%
   displayName: Verify Java Version
 
+# ----------------------------
+# Maven Build
+# ----------------------------
 - task: Maven@3
   displayName: Build with Maven
   inputs:
-    mavenPomFile: pom.xml
-    mavenOptions: -Xmx3072m
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package -DskipTests=true'
+
+# ----------------------------
+# Publish build artifact
+# ----------------------------
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
