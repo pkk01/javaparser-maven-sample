@@ -1,20 +1,22 @@
----
 trigger:
-  - master
+- master
+
 pool:
   name: Default
   demands:
-    - Agent.Name -equals vm1
-    - maven
+  - Agent.Name -equals vm1   # keep if you want to force this VM
+
 steps:
-  - script: |
-      java -version
-      echo %JAVA_HOME%
-    displayName: Verify Java Version
-  - task: Maven@3
-    inputs:
-      mavenPomFile: pom.xml
-      mavenOptions: -Xmx3072m
-      publishJUnitResults: true
-      testResultsFiles: "*/surefire-reports/TEST-.xml"
-      goals: package -DskipTests=true
+- script: |
+    java -version
+    echo %JAVA_HOME%
+  displayName: Verify Java Version
+
+- task: Maven@3
+  displayName: Build with Maven
+  inputs:
+    mavenPomFile: pom.xml
+    mavenOptions: -Xmx3072m
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package -DskipTests=true'
